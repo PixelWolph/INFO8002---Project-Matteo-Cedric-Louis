@@ -13,8 +13,6 @@ def bfs_shortest_paths(edges, start_node, max_iterations):
 
     for i in range(max_iterations):
         start_time_iter = time.time()
-        frontier_rdd = frontier.rdd.coalesce(1)
-        frontier_rdd.saveAsTextFile("hdfs://namenode:9000/output"+str(i)+"/frontier")
         # Generate new frontier by joining with edges
         new_frontier = frontier.join(edges, frontier.id == edges.src) \
                                .select(edges.dst.alias("id"), (frontier.distance + 1).alias("distance")) \
@@ -60,11 +58,6 @@ bidirectional_edges_df = edges_df.select(
 # Remove duplicates in case the original data already had some bidirectional edges
 bidirectional_edges_df = bidirectional_edges_df.distinct()
 
-# Remove duplicates since any pair of actors can appear together in multiple films
-edges_df = edges_df.dropDuplicates()
-
-actor_ids = bidirectional_edges_df.select("src").union(bidirectional_edges_df.select("dst")).distinct().withColumnRenamed("src", "actor_id")
-
 # Assuming 'specified_actor_id' is the actor ID you're interested in
 central_actor_id = "nm0000102"
 
@@ -72,6 +65,7 @@ central_actor_id = "nm0000102"
 results_df = bfs_shortest_paths(bidirectional_edges_df, central_actor_id, 20)
 
 # Write the formatted results to a text file
-results_df.select("formatted").write.text("spark_result.txt")
+results_rdd_df = results_df.rdd.coalesce(1)
+results_rdd_df.saveAsTextFile("hdfs://namenode:9000/output/shortest_distance")
 
 print("Elapsed time : " + str(time.time() - start_time) + " seconds")
