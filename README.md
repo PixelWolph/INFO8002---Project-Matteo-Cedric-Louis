@@ -1,8 +1,10 @@
 # Distributed-Computing-with-MapReduce-and-Spark
 
+All information to run the project are on the PDF report. 
+
 # See Debruyne github for docker information : https://github.com/chrdebru/docker-hadoop-spark
 
-## Quick Start
+## Quick Start (Copy from Debruyne github)
 
 To deploy an the HDFS-Spark cluster, run:
 ```
